@@ -5,6 +5,7 @@
 
         <EditTextPreference
             app:defaultValue="@string/pref_default_display_name"
+            android:defaultValue="true"
             app:key="user_display_name"
             app:title="@string/pref_title_display_name"
             app:useSimpleSummaryProvider="true" />
