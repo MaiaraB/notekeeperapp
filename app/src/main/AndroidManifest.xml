@@ -12,9 +12,11 @@
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings">
-            <meta-data android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity"/>
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
         </activity>
+
         <activity
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
@@ -33,6 +35,25 @@
             android:name=".NoteActivity"
             android:label="@string/title_activity_note"
             android:theme="@style/AppTheme.NoActionBar" />
+        <provider
+            android:name=".NoteKeeperProvider"
+            android:authorities="com.example.notekeeperapp.provider"
+            android:enabled="true"
+            android:exported="true" />
+
+        <receiver
+            android:name=".NoteReminderReceiver"
+            android:enabled="true"
+            android:exported="true"></receiver>
+
+        <service
+            android:name=".NoteUploaderJobService"
+            android:enabled="true"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+        <service
+            android:name=".NoteBackupService"
+            android:exported="false" />
     </application>
 
 </manifest>
