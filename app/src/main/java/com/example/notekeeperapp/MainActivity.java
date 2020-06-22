@@ -185,11 +185,18 @@ public class MainActivity extends AppCompatActivity
         super.onResume();
 
 //        loadNotes();
-        getSupportLoaderManager().restartLoader(LOADER_NOTES, null, this);
+        getSupportLoaderManager().initLoader(LOADER_NOTES, null, this);
 
         updateNavHeader();
 
 //        openDrawer();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        getSupportLoaderManager().destroyLoader(LOADER_NOTES);
     }
 
     private void openDrawer() {
