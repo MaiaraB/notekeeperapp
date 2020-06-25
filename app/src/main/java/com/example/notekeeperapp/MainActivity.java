@@ -1,55 +1,41 @@
 package com.example.notekeeperapp;
 
-import android.app.job.JobInfo;
-import android.app.job.JobScheduler;
-import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.PersistableBundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.Gravity;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Menu;
 import android.widget.TextView;
 
-import com.example.notekeeperapp.NoteKeeperDatabaseContract.CourseInfoEntry;
-import com.example.notekeeperapp.NoteKeeperDatabaseContract.NoteInfoEntry;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.core.view.GravityCompat;
-import androidx.loader.app.LoaderManager;
-import androidx.loader.content.CursorLoader;
-import androidx.loader.content.Loader;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.ui.AppBarConfiguration;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import static com.example.notekeeperapp.NoteKeeperProviderContract.*;
-
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, LoaderManager.LoaderCallbacks<Cursor> {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     public static final int LOADER_NOTES = 0;
     public static final int NOTE_UPLOAD_JOB_ID = 1;
     public static final String USER_DISPLAY_NAME = "user_display_name";
@@ -61,7 +47,8 @@ public class MainActivity extends AppCompatActivity
     private LinearLayoutManager mNotesLayoutManager;
     private CourseRecyclerAdapter mCourseRecyclerAdapter;
     private GridLayoutManager mCoursesLayoutManager;
-    private NoteKeeperOpenHelper mDbOpenHelper;
+    private MainActivityViewModel mMainViewModel;
+    private DrawerLayout mDrawer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +60,9 @@ public class MainActivity extends AppCompatActivity
 
         enableStrictMode();
 
-        mDbOpenHelper = new NoteKeeperOpenHelper(this);
+        ViewModelProvider viewModelProvider = new ViewModelProvider(getViewModelStore(),
+                ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()));
+        mMainViewModel = viewModelProvider.get(MainActivityViewModel.class);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -86,17 +75,17 @@ public class MainActivity extends AppCompatActivity
         // this didn't seem necessary
 //        PreferenceManager.setDefaultValues(this, R.xml.root_preferences, false);
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        mDrawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_notes, R.id.nav_courses, R.id.nav_slideshow)
-                .setDrawerLayout(drawer)
+                R.id.nav_notes, R.id.nav_courses)
+                .setDrawerLayout(mDrawer)
                 .build();
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
+                this, mDrawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        mDrawer.addDrawerListener(toggle);
         toggle.syncState();
 //        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
 //        NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
@@ -121,7 +110,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onDestroy() {
-        mDbOpenHelper.close();
         super.onDestroy();
     }
 
@@ -149,17 +137,17 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void scheduleNoteUpload() {
-        PersistableBundle extras = new PersistableBundle();
-        extras.putString(NoteUploaderJobService.EXTRA_DATA_URI, Notes.CONTENT_URI.toString());
-
-        ComponentName componentName = new ComponentName(this, NoteUploaderJobService.class);
-        JobInfo jobInfo = new JobInfo.Builder(NOTE_UPLOAD_JOB_ID, componentName)
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .setExtras(extras)
-                .build();
-
-        JobScheduler jobScheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
-        jobScheduler.schedule(jobInfo);
+//        PersistableBundle extras = new PersistableBundle();
+//        extras.putString(NoteUploaderJobService.EXTRA_DATA_URI, Notes.CONTENT_URI.toString());
+//
+//        ComponentName componentName = new ComponentName(this, NoteUploaderJobService.class);
+//        JobInfo jobInfo = new JobInfo.Builder(NOTE_UPLOAD_JOB_ID, componentName)
+//                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+//                .setExtras(extras)
+//                .build();
+//
+//        JobScheduler jobScheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
+//        jobScheduler.schedule(jobInfo);
     }
 
     private void backupNotes() {
@@ -168,35 +156,13 @@ public class MainActivity extends AppCompatActivity
         startService(intent);
     }
 
-    //    @Override
-//    public boolean onSupportNavigateUp() {
-//        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-//        return NavigationUI.navigateUp(navController, mAppBarConfiguration)
-//                || super.onSupportNavigateUp();
-//    }
-
-//    @Override
-//    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-//
-//    }
-
     @Override
     protected void onResume() {
         super.onResume();
 
-//        loadNotes();
-        getSupportLoaderManager().initLoader(LOADER_NOTES, null, this);
-
         updateNavHeader();
 
 //        openDrawer();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        getSupportLoaderManager().destroyLoader(LOADER_NOTES);
     }
 
     private void openDrawer() {
@@ -208,18 +174,6 @@ public class MainActivity extends AppCompatActivity
                 drawer.openDrawer(GravityCompat.START);
             }
         }, 1000);
-    }
-
-    private void loadNotes() {
-        SQLiteDatabase db = mDbOpenHelper.getReadableDatabase();
-        String[] noteColumns = {
-                NoteInfoEntry.COLUMN_NOTE_TITLE,
-                NoteInfoEntry.COLUMN_COURSE_ID,
-                NoteInfoEntry._ID};
-        String noteOrderBy = NoteInfoEntry.COLUMN_COURSE_ID + ", " + NoteInfoEntry.COLUMN_NOTE_TITLE;
-        final Cursor noteCursor = db.query(NoteInfoEntry.TABLE_NAME, noteColumns,
-                null, null, null, null, noteOrderBy);
-        mNoteRecyclerAdapter.changeCursor(noteCursor);
     }
 
     private void updateNavHeader() {
@@ -253,37 +207,22 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void initializeDisplayContent() {
-        DataManager.loadFromDatabase(mDbOpenHelper);
         mRecyclerItems = findViewById(R.id.list_items);
         mNotesLayoutManager = new LinearLayoutManager(this);
         mCoursesLayoutManager = new GridLayoutManager(this, getResources().getInteger(R.integer.course_grid_span));
 
         mNoteRecyclerAdapter = new NoteRecyclerAdapter(this, null);
 
-        List<CourseInfo> courses = DataManager.getInstance().getCourses();
-        mCourseRecyclerAdapter = new CourseRecyclerAdapter(this, courses);
+        mCourseRecyclerAdapter = new CourseRecyclerAdapter(this, null);
 
         displayNotes();
-    }
-
-    private void displayNotes() {
-        mRecyclerItems.setLayoutManager(mNotesLayoutManager);
-        mRecyclerItems.setAdapter(mNoteRecyclerAdapter);
-
-        selectNavigationMenuItem(R.id.nav_notes);
-    }
-    
-    private void displayCourses() {
-        mRecyclerItems.setLayoutManager(mCoursesLayoutManager);
-        mRecyclerItems.setAdapter(mCourseRecyclerAdapter);
-
-        selectNavigationMenuItem(R.id.nav_courses);
     }
 
     private void selectNavigationMenuItem(int id) {
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         Menu menu = navigationView.getMenu();
-        menu.findItem(id).setChecked(true);
+//        menu.findItem(id).setChecked(true);
+        navigationView.setCheckedItem(menu.findItem(id));
     }
 
     @Override
@@ -301,9 +240,36 @@ public class MainActivity extends AppCompatActivity
             handleSelection(R.string.nav_send_message);
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
+        mDrawer.closeDrawer(GravityCompat.START);
         return false;
+    }
+
+    private void displayNotes() {
+        mRecyclerItems.setLayoutManager(mNotesLayoutManager);
+
+        mMainViewModel.getNotesExpanded().observe(this, new Observer<List<NoteInfoExpanded>>() {
+            @Override
+            public void onChanged(List<NoteInfoExpanded> notesInfoExpanded) {
+                mNoteRecyclerAdapter.changeNotes(notesInfoExpanded);
+                mRecyclerItems.setAdapter(mNoteRecyclerAdapter);
+            }
+        });
+
+        selectNavigationMenuItem(R.id.nav_notes);
+    }
+
+    private void displayCourses() {
+        mRecyclerItems.setLayoutManager(mCoursesLayoutManager);
+
+        mMainViewModel.getCourses().observe(this, new Observer<List<CourseInfo>>() {
+            @Override
+            public void onChanged(List<CourseInfo> courses) {
+                mCourseRecyclerAdapter.changeCoutses(courses);
+                mRecyclerItems.setAdapter(mCourseRecyclerAdapter);
+            }
+        });
+
+        selectNavigationMenuItem(R.id.nav_courses);
     }
 
     private void handleShare() {
@@ -316,36 +282,5 @@ public class MainActivity extends AppCompatActivity
     private void handleSelection(int message_id) {
         View view = findViewById(R.id.list_items);
         Snackbar.make(view, message_id, Snackbar.LENGTH_LONG).show();
-    }
-
-    @NonNull
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
-        CursorLoader cursor = null;
-        if (id == LOADER_NOTES) {
-            String[] noteColumns = {
-                    Notes._ID,
-                    Notes.COLUMN_NOTE_TITLE,
-                    Courses.COLUMN_COURSE_TITLE};
-            String noteOrderBy = Courses.COLUMN_COURSE_TITLE + ", " + Notes.COLUMN_NOTE_TITLE;
-
-            cursor = new CursorLoader(this, Notes.CONTENT_EXPANDED_URI, noteColumns,
-                    null, null, noteOrderBy);
-        }
-        return cursor;
-    }
-
-    @Override
-    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
-        if (loader.getId() == LOADER_NOTES) {
-            mNoteRecyclerAdapter.changeCursor(data);
-        }
-    }
-
-    @Override
-    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
-        if (loader.getId() == LOADER_NOTES) {
-            mNoteRecyclerAdapter.changeCursor(null);
-        }
     }
 }

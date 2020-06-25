@@ -13,7 +13,7 @@ public class NoteReminderReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String noteTitle = intent.getStringExtra(EXTRA_NOTE_TITLE);
         String noteText = intent.getStringExtra(EXTRA_NOTE_TEXT);
-        int noteId = intent.getIntExtra(EXTRA_NOTE_ID, 0);
+        long noteId = intent.getLongExtra(EXTRA_NOTE_ID, 0);
 
         NoteReminderNotification.notify(context, noteTitle, noteText, noteId);
     }

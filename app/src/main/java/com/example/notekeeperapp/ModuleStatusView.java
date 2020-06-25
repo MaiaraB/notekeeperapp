@@ -48,6 +48,7 @@ public class ModuleStatusView extends View {
 
     public void setModuleStatus(boolean[] moduleStatus) {
         mModuleStatus = moduleStatus;
+        requestLayout();
     }
 
     public ModuleStatusView(Context context) {
@@ -145,6 +146,11 @@ public class ModuleStatusView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         setupModuleRectangles(w, h);
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        setupModuleRectangles(right-left, bottom-top);
     }
 
     @Override

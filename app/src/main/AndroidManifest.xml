@@ -35,11 +35,6 @@
             android:name=".NoteActivity"
             android:label="@string/title_activity_note"
             android:theme="@style/AppTheme.NoActionBar" />
-        <provider
-            android:name=".NoteKeeperProvider"
-            android:authorities="com.example.notekeeperapp.provider"
-            android:enabled="true"
-            android:exported="true" />
 
         <receiver
             android:name=".NoteReminderReceiver"

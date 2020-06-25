@@ -3,16 +3,32 @@ package com.example.notekeeperapp;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public final class ModuleInfo implements Parcelable {
-    private final String mModuleId;
-    private final String mTitle;
-    private boolean mIsComplete = false;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
 
-    public ModuleInfo(String moduleId, String title) {
-        this(moduleId, title, false);
+@Entity(tableName = "module_info")
+public final class ModuleInfo implements Parcelable {
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
+    private int mId;
+    @ColumnInfo(name = "module_id")
+    private String mModuleId;
+    @ColumnInfo(name = "module_title")
+    private String mTitle;
+    @ColumnInfo(name = "is_complete")
+    private boolean mIsComplete = false;
+    @ColumnInfo(name = "course_id")
+    private long mCourseId;
+
+    @Ignore
+    public ModuleInfo(long courseId, String moduleId, String title) {
+        this(courseId, moduleId, title, false);
     }
 
-    public ModuleInfo(String moduleId, String title, boolean isComplete) {
+    public ModuleInfo(long courseId, String moduleId, String title, boolean isComplete) {
+        mCourseId = courseId;
         mModuleId = moduleId;
         mTitle = title;
         mIsComplete = isComplete;
@@ -24,13 +40,25 @@ public final class ModuleInfo implements Parcelable {
         mIsComplete = source.readByte() == 1;
     }
 
+    public int getId() { return mId; }
+
+    public void setId(int id) { mId = id; }
+
+    public long getCourseId() { return mCourseId; }
+
+    public void setCourseId(long courseId) { mCourseId = courseId; }
+
     public String getModuleId() {
         return mModuleId;
     }
 
+    public void setModuleId(String moduleId) { mModuleId = moduleId; }
+
     public String getTitle() {
         return mTitle;
     }
+
+    public void setTitle(String title) { mTitle = title; }
 
     public boolean isComplete() {
         return mIsComplete;

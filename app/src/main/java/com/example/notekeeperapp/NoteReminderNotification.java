@@ -3,19 +3,10 @@ package com.example.notekeeperapp;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Build;
-
-import com.example.notekeeperapp.MainActivity;
-import com.example.notekeeperapp.NoteActivity;
-import com.example.notekeeperapp.NoteBackup;
-import com.example.notekeeperapp.NoteBackupService;
-import com.example.notekeeperapp.NotificationUtil;
-import com.example.notekeeperapp.R;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -25,7 +16,7 @@ public class NoteReminderNotification {
     public static final String NOTES_CHANNEL_ID = "notes_channel_id";
     public static final String NOTES_CHANNEL_NAME = "Notes";
 
-    public static void notify(Context context, String noteTitle, String noteText, int noteId) {
+    public static void notify(Context context, String noteTitle, String noteText, long noteId) {
         String notificationChannelId = NotificationUtil.createNotificationChannel(context,
                 NOTES_CHANNEL_ID, NOTES_CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, notificationChannelId);

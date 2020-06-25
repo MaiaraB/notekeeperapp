@@ -3,35 +3,52 @@ package com.example.notekeeperapp;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public final class NoteInfo implements Parcelable {
-    private CourseInfo mCourse;
-    private String mTitle;
-    private String mText;
-    private int mId;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
 
-    public NoteInfo(int id, CourseInfo course, String title, String text) {
-        mCourse = course;
+@Entity(tableName = "note_info")
+public final class NoteInfo implements Parcelable {
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
+    private long mId;
+    @ColumnInfo(name = "note_title")
+    private String mTitle;
+    @ColumnInfo(name = "note_text")
+    private String mText;
+    @ColumnInfo(name = "course_id")
+    private long mCourseId;
+
+
+    public NoteInfo(long id, long courseId, String title, String text) {
+        mCourseId = courseId;
         mTitle = title;
         mText = text;
         mId = id;
     }
 
+    @Ignore
+    public NoteInfo(long courseId, String title, String text) {
+        mCourseId = courseId;
+        mTitle = title;
+        mText = text;
+    }
+
     private NoteInfo(Parcel parcel) {
-        mCourse = parcel.readParcelable(CourseInfo.class.getClassLoader());
+        mCourseId = parcel.readLong();
         mTitle = parcel.readString();
         mText = parcel.readString();
     }
 
-    public int getId() { return mId; }
+    public long getId() { return mId; }
 
-    public void setId(int id) { mId = id; }
+    public void setId(long id) { mId = id; }
 
-    public CourseInfo getCourse() {
-        return mCourse;
-    }
+    public long getCourseId() { return mCourseId; }
 
-    public void setCourse(CourseInfo course) {
-        mCourse = course;
+    public void setCourseId(long courseId) {
+        mCourseId = courseId;
     }
 
     public String getTitle() {
@@ -51,7 +68,7 @@ public final class NoteInfo implements Parcelable {
     }
 
     private String getCompareKey() {
-        return mCourse.getCourseId() + "|" + mTitle + "|" + mText;
+        return mCourseId + "|" + mTitle + "|" + mText;
     }
 
     @Override
@@ -81,7 +98,7 @@ public final class NoteInfo implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeParcelable(mCourse, 0);
+        parcel.writeLong(mCourseId);
         parcel.writeString(mTitle);
         parcel.writeString(mText);
     }

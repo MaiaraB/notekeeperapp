@@ -1,63 +1,53 @@
 package com.example.notekeeperapp;
 
-import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.util.ArrayList;
-import java.util.List;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
 
+@Entity(tableName = "course_info")
 public final class CourseInfo implements Parcelable {
-    private final String mCourseId;
-    private final String mTitle;
-    private final List<ModuleInfo> mModules;
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
+    private long mId;
+    @ColumnInfo(name = "course_id")
+    private String mCourseId;
+    @ColumnInfo(name = "course_title")
+    private String mTitle;
 
-    public CourseInfo(String courseId, String title, List<ModuleInfo> modules) {
-        mCourseId = courseId;
-        mTitle = title;
-        mModules = modules;
+    public CourseInfo(long id, String courseId, String title) {
+        this.mId = id;
+        this.mCourseId = courseId;
+        this.mTitle = title;
+    }
+
+    @Ignore
+    public CourseInfo(String courseId, String title) {
+        this.mCourseId = courseId;
+        this.mTitle = title;
     }
 
     private CourseInfo(Parcel source) {
         mCourseId = source.readString();
         mTitle = source.readString();
-        mModules = new ArrayList<>();
-        source.readTypedList(mModules, ModuleInfo.CREATOR);
     }
+
+    public long getId() { return mId; }
+
+    public void setId(int id) { mId = id; }
 
     public String getCourseId() {
         return mCourseId;
     }
 
-    public String getTitle() {
-        return mTitle;
-    }
+    void setCourseId(String courseId) { mCourseId = courseId; }
 
-    public List<ModuleInfo> getModules() {
-        return mModules;
-    }
+    public String getTitle() { return mTitle; }
 
-    public boolean[] getModulesCompletionStatus() {
-        boolean[] status = new boolean[mModules.size()];
-
-        for(int i=0; i < mModules.size(); i++)
-            status[i] = mModules.get(i).isComplete();
-
-        return status;
-    }
-
-    public void setModulesCompletionStatus(boolean[] status) {
-        for(int i=0; i < mModules.size(); i++)
-            mModules.get(i).setComplete(status[i]);
-    }
-
-    public ModuleInfo getModule(String moduleId) {
-        for(ModuleInfo moduleInfo: mModules) {
-            if(moduleId.equals(moduleInfo.getModuleId()))
-                return moduleInfo;
-        }
-        return null;
-    }
+    public void setTitle(String title) { mTitle = title; }
 
     @Override
     public String toString() {
@@ -88,7 +78,6 @@ public final class CourseInfo implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(mCourseId);
         dest.writeString(mTitle);
-        dest.writeTypedList(mModules);
     }
 
     public static final Creator<CourseInfo> CREATOR =
